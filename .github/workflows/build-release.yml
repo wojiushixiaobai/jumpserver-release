@@ -1,0 +1,274 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 20 * * *'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.check_build.outputs.build }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get Version
+        id: get_version
+        run: |
+          version=$(curl -s https://api.github.com/repos/jumpserver/jumpserver/releases/latest | jq -r .tag_name)
+          echo "Current Version: ${version}"
+          if [ -z "${version}" ]; then
+            exit 1
+          fi
+          echo "version=${version}" >> $GITHUB_ENV
+          echo "version=${version}" >> $GITHUB_OUTPUT
+
+      - name: Check Build
+        id: check_build
+        run: |
+          curl -s https://api.github.com/repos/${{ github.repository }}/tags | jq -r .[].name | grep -q ${{ env.version }} || echo "create_tag=1" >> $GITHUB_ENV
+          gh release view ${{ env.version }} -R ${{ github.repository }} >/dev/null 2>&1 || echo "create_release=1" >> $GITHUB_ENV
+          gh release view ${{ env.version }} -R ${{ github.repository }} | grep sha256sum.txt >/dev/null 2>&1 || echo "build=1" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Code
+        if: env.create_tag == '1'
+        uses: actions/checkout@v4
+
+      - name: Create Tag
+        if: env.create_tag == '1'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git tag ${{ env.version }}
+          git push origin ${{ env.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Release
+        if: env.create_release == '1'
+        run: |
+          gh release create ${{ env.version }} -t ${{ env.version }} -n "Release ${{ env.version }}" -R ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    runs-on: ubuntu-latest
+    needs: check
+    if: needs.check.outputs.build == '1'
+    strategy:
+      matrix:
+        go_version: [ 'stable' ]
+        java_version: [ '17' ]
+        node_version: [ '20' ]
+        python_version: [ '3.11' ]
+        component: [ core, koko, lion, chen, lina, luna ]
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: false
+          swap-storage: false
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2
+            ~/.cache
+            ~/go/pkg/mod
+            /usr/local/share/.cache/yarn
+          key: ${{ runner.os }}-${{ matrix.component }}
+          restore-keys: ${{ runner.os }}-${{ matrix.component }}
+
+      - name: Get Version
+        run: |
+          version=${{ needs.check.outputs.version }}
+          echo "version=${version}" >> $GITHUB_ENV
+
+      - uses: actions/setup-go@v5
+        if: matrix.component == 'koko' || matrix.component == 'lion'
+        with:
+          go-version: ${{ matrix.go_version }}
+
+      - uses: actions/setup-java@v4
+        if: matrix.component == 'chen'
+        with:
+          distribution: 'oracle'
+          java-version: ${{ matrix.java_version }}
+
+      - uses: actions/setup-node@v4
+        if: matrix.component != 'core'
+        with:
+          node-version: ${{ matrix.node_version }}
+
+      - uses: actions/setup-python@v5
+        if: matrix.component == 'core'
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install Dependencies for Python
+        if: matrix.component == 'core'
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install --no-install-recommends g++ make pkg-config
+          sudo apt-get -y install --no-install-recommends default-libmysqlclient-dev freetds-dev gettext libkrb5-dev libldap2-dev libsasl2-dev
+          sudo apt-get autoclean
+          pip install poetry
+          SECRET_KEY=$(head -c100 < /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 48)
+          echo "SECRET_KEY=${SECRET_KEY}" >> $GITHUB_ENV
+
+      - name: Install Dependencies for Golang
+        if: matrix.component == 'koko' || matrix.component == 'lion'
+        run: |
+          CipherKey=$(head -c 100 /dev/urandom | base64 | head -c 32)
+          GOVERSION=$(go version | awk '{print $3}')
+          echo "CipherKey=${CipherKey}" >> $GITHUB_ENV
+          echo "GOVERSION=${GOVERSION}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v4
+
+      - name: Create Workspace
+        run: mkdir -p dist
+
+      - name: Checkout Code for Core
+        if: matrix.component == 'core'
+        uses: actions/checkout@v4
+        with:
+          repository: jumpserver/jumpserver
+          ref: ${{ env.version }}
+          path: ${{ matrix.component }}
+
+      - name: Checkout Code for Custom
+        if: matrix.component != 'core'
+        uses: actions/checkout@v4
+        with:
+          repository: jumpserver/${{ matrix.component }}
+          ref: ${{ env.version }}
+          path: ${{ matrix.component }}
+
+      - name: Build Core
+        if: matrix.component == 'core'
+        run: |
+          poetry config virtualenvs.create false
+          poetry source remove aliyun
+          poetry source add --priority=primary PyPI
+          poetry lock --no-update
+          poetry install --only main
+          sed -i "s@VERSION = .*@VERSION = '${version}'@g" apps/jumpserver/const.py
+          echo > config.yml
+          export SECRET_KEY=${{ env.SECRET_KEY }}
+          python apps/manage.py compilemessages
+          rm -f config.yml
+          cd ..
+          cp -R core core-${{ env.version }}
+          tar -zcvf dist/core-${{ env.version }}.tar.gz core-${{ env.version }}
+        working-directory: ./${{ matrix.component }}
+
+      - name: Build Web
+        run: |
+          case ${{ matrix.component }} in
+            koko|lion)
+              cd ui
+              ;;
+            chen)
+              cd frontend
+              yarn config set ignore-engines true
+              ;;
+            lina)
+              sed -i "s@version-dev@${version}@g" src/layout/components/NavHeader/About.vue
+              ;;
+            luna)
+              sed -i "s@version =.*;@version = '${version}';@g" src/environments/environment.prod.ts
+              ;;
+          esac
+          yarn install
+          yarn build
+          case ${{ matrix.component }} in
+            luna)
+              cp -R src/assets/i18n luna/
+              ;;
+          esac
+          case ${{ matrix.component }} in
+            lina|luna)
+              mv ${{ matrix.component }} ${{ matrix.component }}-${{ env.version }}
+              tar -zcvf ../dist/${{ matrix.component }}-${{ env.version }}.tar.gz ${{ matrix.component }}-${{ env.version }}
+              ;;
+          esac
+        working-directory: ./${{ matrix.component }}
+
+      - name: Check Build
+        if: matrix.component == 'koko' || matrix.component == 'lion'
+        run: |
+          if [ ! -f ./${{ matrix.component }}/.goreleaser.yaml ]; then
+            wget -O .goreleaser-${{ matrix.component }}.yaml https://github.com/jumpserver/${{ matrix.component }}/raw/refs/heads/dev/.goreleaser.yaml
+          else
+            cp -f ./${{ matrix.component }}/.goreleaser.yaml .goreleaser-${{ matrix.component }}.yaml
+          fi
+
+      - name: Build Binaries
+        if: matrix.component == 'koko' || matrix.component == 'lion'
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean --skip=publish --config=../.goreleaser-${{ matrix.component }}.yaml
+          workdir: ./${{ matrix.component }}
+        env:
+          CipherKey: ${{ env.CipherKey }}
+          GOVERSION: ${{ env.GOVERSION }}
+
+      - name: Check Binaries
+        if: matrix.component == 'koko' || matrix.component == 'lion'
+        run: mv dist/*.tar.gz ../dist/
+        working-directory: ./${{ matrix.component }}
+
+      - name: Build Chen
+        if: matrix.component == 'chen'
+        run: |
+          mvn clean package -DskipTests
+          mkdir -p dist chen-${{ env.version }}
+          rm -f config/application-dev.yml
+          mv backend/web/target/web-*.jar chen-${{ env.version }}/chen.jar
+          mv drivers chen-${{ env.version }}/drivers
+          mv config chen-${{ env.version }}/config
+          tar -zcvf ../dist/chen-${{ env.version }}.tar.gz chen-${{ env.version }}
+        working-directory: ./${{ matrix.component }}
+
+      - name: Upload Binaries
+        run: |
+          if ! gh release view ${{ env.version }} -R ${{ github.repository }} | grep ${{ matrix.component }} >/dev/null 2>&1; then
+            gh release upload ${{ env.version }} dist/*.tar.gz -R ${{ github.repository }}
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  verfiy:
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Get Version
+        run: |
+          version=${{ needs.check.outputs.version }}
+          echo "version=${version}" >> $GITHUB_ENV
+
+      - name: Verify Release
+        run: |
+          gh release view ${{ env.version }} -R ${{ github.repository }} | grep sha256sum.txt >/dev/null 2>&1 || echo "Verify=1" >> $GITHUB_env
+
+      - name: Verify Binaries
+        if: ${{ env.Verify == '1' }}
+        run: |
+          gh release download ${{ env.version }} -R ${{ github.repository }} --pattern '*.tar.gz'
+          sha256sum *.tar.gz > sha256sum.txt
+          gh release upload ${{ env.version }} sha256sum.txt -R ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
