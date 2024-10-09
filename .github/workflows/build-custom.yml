@@ -53,6 +53,7 @@ jobs:
         python_version: [ '3.11' ]
         component: [ core, koko, lion, chen, lina, luna, web ]
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/cache@v4
         with:
           path: |
@@ -60,7 +61,7 @@ jobs:
             ~/.npm
             ~/.cache
             ~/go/pkg/mod
-          key: ${{ runner.os }}-${{ matrix.component }}
+          key: ${{ runner.os }}-${{ matrix.component }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-${{ matrix.component }}
 
       - name: Get Version
@@ -69,7 +70,7 @@ jobs:
           echo "version=${version}" >> $GITHUB_ENV
 
       - uses: actions/setup-go@v5
-        if: matrix.component == 'koko' || matrix.component == 'lion'
+        if: contains(fromJson('["koko", "lion"]'), matrix.component)
         with:
           go-version: ${{ matrix.go_version }}
 
@@ -80,7 +81,7 @@ jobs:
           java-version: ${{ matrix.java_version }}
 
       - uses: actions/setup-node@v4
-        if: matrix.component != 'core' || matrix.component != 'web'
+        if: contains(fromJson('["koko", "lion", "chen", "lina", "luna"]'), matrix.component)
         with:
           node-version: ${{ matrix.node_version }}
 
@@ -100,16 +101,6 @@ jobs:
           SECRET_KEY=$(head -c100 < /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 48)
           echo "SECRET_KEY=${SECRET_KEY}" >> $GITHUB_ENV
 
-      - name: Install Dependencies for Golang
-        if: matrix.component == 'koko' || matrix.component == 'lion'
-        run: |
-          CipherKey=$(head -c 100 /dev/urandom | base64 | head -c 32)
-          GOVERSION=$(go version | awk '{print $3}')
-          echo "CipherKey=${CipherKey}" >> $GITHUB_ENV
-          echo "GOVERSION=${GOVERSION}" >> $GITHUB_ENV
-
-      - uses: actions/checkout@v4
-
       - name: Create Workspace
         run: mkdir -p dist
 
@@ -122,15 +113,15 @@ jobs:
           path: ${{ matrix.component }}
 
       - name: Checkout Code for Custom
-        if: matrix.component != 'core' && matrix.component != 'web'
+        if: contains(fromJson('["koko", "lion", "chen", "lina", "luna"]'), matrix.component)
         uses: actions/checkout@v4
         with:
           repository: jumpserver/${{ matrix.component }}
           ref: ${{ env.version }}
           path: ${{ matrix.component }}
 
-      - name: Checkout Code for Static
-        if: matrix.component == 'static'
+      - name: Checkout Code for Web
+        if: matrix.component == 'web'
         run: |
           cp scripts/prepare.sh .
           ./prepare.sh
@@ -156,7 +147,7 @@ jobs:
         working-directory: ./${{ matrix.component }}
 
       - name: Build Web
-        if: matrix.component != 'core' || matrix.component != 'web'
+        if: contains(fromJson('["koko", "lion", "chen", "lina", "luna"]'), matrix.component)
         run: |
           case ${{ matrix.component }} in
             koko|lion)
@@ -166,7 +157,6 @@ jobs:
               cd frontend
               rm -f package-lock.json yarn.lock
               yarn config set ignore-engines true
-              yarn add handsontable
               ;;
             lina)
               sed -i "s@version-dev@${version}@g" src/layout/components/NavHeader/About.vue
@@ -191,8 +181,8 @@ jobs:
         working-directory: ./${{ matrix.component }}
 
       - name: Build Binaries
-        if: matrix.component == 'koko' || matrix.component == 'lion'
-        run:
+        if: contains(fromJson('["koko", "lion"]'), matrix.component)
+        run: |
           make linux-amd64 BUILDDIR=dist VERSION=${{ env.version }}
           make linux-arm64 BUILDDIR=dist VERSION=${{ env.version }}
           mv dist/*.tar.gz ../dist/
@@ -216,20 +206,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build:
+  docker:
     runs-on: ubuntu-latest
     needs: release
     strategy:
       matrix:
         component: [ core, koko, lion, chen, web ]
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: docker-${{ matrix.component }}
+          key: docker-${{ matrix.component }}-${{ github.sha }}
           restore-keys: docker-${{ matrix.component }}
 
-      - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
 
@@ -249,6 +239,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          provenance: false
           file: dockerfile/${{ matrix.component }}/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true

@@ -12,8 +12,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && rm -f /etc/apt/apt.conf.d/docker-clean \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
     && apt-get update \
-    && apt-get -y install --no-install-recommends ${DEPENDENCIES} \
-    && echo "no" | dpkg-reconfigure dash
+    && apt-get -y install --no-install-recommends ${DEPENDENCIES}
 
 WORKDIR /opt
 
@@ -27,21 +26,15 @@ RUN set -e \
 
 ARG VERSION=v4.2.0
 
-COPY dist/lina-${VERSION}.tar.gz /opt
-COPY dist/luna-${VERSION}.tar.gz /opt
-
 RUN set -e \
-    && mkdir -p /opt/lina /opt/luna \
+    && mkdir -p /opt/lina /opt/luna /opt/download \
+    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/lina-${VERSION}.tar.gz \
+    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/luna-${VERSION}.tar.gz \
+    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/web-${VERSION}.tar.gz \
     && tar -xf lina-${VERSION}.tar.gz -C /opt/lina --strip-components=1 \
     && tar -xf luna-${VERSION}.tar.gz -C /opt/luna --strip-components=1 \
-    && chown -R root:root /opt/lina /opt/luna \
-    && rm -f /opt/*.tar.gz
-
-RUN set -e \
-    && mkdir -p /opt/download \
-    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/web-${VERSION}.tar.gz \
     && tar -xf web-${VERSION}.tar.gz -C /opt/download --strip-components=1 \
-    && chown -R root:root /opt/download \
+    && chown -R root:root /opt/lina /opt/luna /opt/download \
     && rm -f /opt/*.tar.gz
 
 COPY dockerfile/web/nginx.conf /etc/nginx/nginx.conf

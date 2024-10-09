@@ -3,10 +3,10 @@ set -ex
 
 PYTHON_VERSION=${PYTHON_VERSION:-3.11.6}
 DBEAVER_VERSION=${DBEAVER_VERSION:-22.3.4}
-CHROME_VERSION=${CHROME_VERSION:-129.0.6668.58}
-CHROME_DRIVER_VERSION=${CHROME_DRIVER_VERSION:-129.0.6668.70}
+CHROME_VERSION=${CHROME_VERSION:-129.0.6668.71}
+CHROME_DRIVER_VERSION=${CHROME_DRIVER_VERSION:-129.0.6668.91}
 TINKER_VERSION=${TINKER_VERSION:-v0.1.8}
-OPENSSH_VERSION=${OPENSSH_VERSION:-v9.8.0.0}
+OPENSSH_VERSION=${OPENSSH_VERSION:-v9.4.0.0}
 
 DOWNLOAD_URL=https://download.jumpserver.org
 
@@ -28,4 +28,4 @@ wget --no-clobber ${DOWNLOAD_URL}/public/Tinker_Installer_${TINKER_VERSION}.exe
 
 mkdir -p ${PROJECT_DIR}/opt/download/public
 cd ${PROJECT_DIR}/opt/download/public || exit 1
-wget --no-clobber https://github.com/PowerShell/Win32-OpenSSH/releases/download/${OPENSSH_VERSION}p1-Preview/OpenSSH-Win64-${OPENSSH_VERSION}.msi
+wget --no-clobber https://github.com/PowerShell/Win32-OpenSSH/releases/download/${OPENSSH_VERSION}p1-Beta/OpenSSH-Win64-${OPENSSH_VERSION}.msi

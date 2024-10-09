@@ -98,14 +98,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get -y install --no-install-recommends ${DEPENDENCIES} \
     && apt-get -y install --no-install-recommends ${TOOLS} \
     && mkdir -p /root/.ssh/ \
-    && echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile /dev/null\n\tCiphers +aes128-cbc\n\tKexAlgorithms +diffie-hellman-group1-sha1\n\tHostKeyAlgorithms +ssh-rsa" > /root/.ssh/config \
-    && echo "no" | dpkg-reconfigure dash \
-    && sed -i "s@# export @export @g" ~/.bashrc \
-    && sed -i "s@# alias @alias @g" ~/.bashrc
+    && echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile /dev/null\n\tCiphers +aes128-cbc\n\tKexAlgorithms +diffie-hellman-group1-sha1\n\tHostKeyAlgorithms +ssh-rsa" > /root/.ssh/config
 
 COPY --from=stage-1 /usr/local/bin /usr/local/bin
-COPY --from=stage-2 /opt /opt
-COPY --from=stage-2 /opt/jumpserver/apps/libs/ansible/ansible.cfg /etc/ansible/
+COPY --from=stage-1 /opt/jumpserver/apps/libs/ansible/ansible.cfg /etc/ansible/
+COPY --from=stage-2 /opt/py3 /opt/py3
 
 WORKDIR /opt/jumpserver
 
