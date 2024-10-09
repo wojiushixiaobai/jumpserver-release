@@ -82,7 +82,7 @@ RUN set -e \
     && chown root:root /usr/local/bin/rawhelm /usr/local/bin/rawkubectl \
     && rm -f /opt/*.tar.gz
 
-ARG VERSION=v4.2.0
+ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/koko \
@@ -120,7 +120,7 @@ COPY --from=stage-2 /opt/kubectl-aliases /opt/kubectl-aliases
 
 WORKDIR /opt/koko
 
-ARG VERSION=v4.2.0
+ARG VERSION
 ENV VERSION=${VERSION}
 
 VOLUME /opt/koko/data

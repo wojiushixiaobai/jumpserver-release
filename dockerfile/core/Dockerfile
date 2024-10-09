@@ -25,7 +25,7 @@ RUN set -e \
     && chmod 755 /usr/local/bin/check \
     && rm -f /opt/*.tar.gz
 
-ARG VERSION=v4.2.0
+ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/jumpserver \
@@ -106,7 +106,7 @@ COPY --from=stage-2 /opt/py3 /opt/py3
 
 WORKDIR /opt/jumpserver
 
-ARG VERSION=v4.2.0
+ARG VERSION
 ENV VERSION=${VERSION}
 
 VOLUME /opt/jumpserver/data

@@ -24,7 +24,7 @@ RUN set -e \
     && chmod 755 /usr/local/bin/check \
     && rm -f /opt/*.tar.gz
 
-ARG VERSION=v4.2.0
+ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/lina /opt/luna /opt/download \
@@ -63,7 +63,7 @@ COPY --from=stage-1 /docker-entrypoint.d/99-check-core-ready.sh /docker-entrypoi
 
 WORKDIR /opt
 
-ARG VERSION=v4.2.0
+ARG VERSION
 ENV VERSION=${VERSION}
 
 VOLUME /var/log/nginx

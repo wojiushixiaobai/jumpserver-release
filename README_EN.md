@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://jumpserver.org"><img src="https://download.jumpserver.org/images/jumpserver-logo.svg" alt="JumpServer" width="300" /></a>
 </p>
-<h3 align="center">多云环境下更好用的堡垒机</h3>
+<h3 align="center">A better bastion host for multi-cloud environments</h3>
 
 <p align="center">
   <a href="https://www.gnu.org/licenses/gpl-3.0.html"><img src="https://img.shields.io/github/license/jumpserver/Dockerfile" alt="License: GPLv3"></a>
@@ -12,13 +12,13 @@
 
 --------------------------
 
-## 环境要求
+## Environment Requirements
 - PostgreSQL Server >= 15.0
 - Redis Server >= 6.0
 
-## 快速部署
+## Quick Deployment
 ```sh
-# 测试环境可以使用，生产环境推荐外置数据
+# Suitable for testing environment, for production environment, it is recommended to use external data
 git clone --depth=1 https://github.com/jumpserver/Dockerfile.git
 cd Dockerfile
 cp config_example.conf .env
@@ -28,9 +28,9 @@ docker compose -f docker-compose-network.yml -f docker-compose-redis.yml -f dock
 docker rm jms_init_db
 ```
 
-## 标准部署
+## Standard Deployment
 
-> 请先自行创建 数据库 和 Redis, 版本要求参考上面环境要求说明
+> Please create the database and Redis yourself first, the version requirements refer to the above environment requirements
 
 ```sh
 git clone --depth=1 https://github.com/jumpserver/Dockerfile.git
@@ -39,23 +39,23 @@ cp config_example.conf .env
 vi .env
 ```
 ```vim
-# 版本号可以自己根据项目的版本修改
-VERSION=v4.2.0
+# You can modify the version number according to the project version
+VERSION=v4.1.0
 
-# 构建参数, 支持 amd64, arm64, ppc64le, s390x
+# Build parameters, support amd64, arm64, ppc64le, s390x
 TARGETARCH=amd64
 
-# Compose, Swarm 模式下修改 NETWORK_DRIVER=overlay
+# For Compose, Swarm mode, modify NETWORK_DRIVER=overlay
 COMPOSE_PROJECT_NAME=jms
 # COMPOSE_HTTP_TIMEOUT=3600
 # DOCKER_CLIENT_TIMEOUT=3600
 DOCKER_SUBNET=192.168.250.0/24
-NETWORK_DRIVER=overlay
+NETWORK_DRIVER=bridge
 
-# 持久化存储
+# Persistent storage
 VOLUME_DIR=/data/jumpserver
 
-# 时区
+# Time zone
 TZ=Asia/Shanghai
 
 # PostgreSQL
@@ -77,7 +77,6 @@ BOOTSTRAP_TOKEN=7Q11Vz6R2J6BLAdO
 LOG_LEVEL=ERROR
 DOMAINS=
 
-# 组件通信
 CORE_HOST=http://core:8080
 
 # Lion
@@ -90,8 +89,8 @@ HTTP_PORT=80
 SSH_PORT=2222
 
 ##
-# SECRET_KEY 保护签名数据的密匙, 首次安装请一定要修改并牢记, 后续升级和迁移不可更改, 否则将导致加密的数据不可解密。
-# BOOTSTRAP_TOKEN 为组件认证使用的密钥, 仅组件注册时使用。组件指 koko, lion, magnus, kael, chen ...
+# SECRET_KEY is the key to protect signed data. Please be sure to modify and remember it for the first installation. It cannot be changed during subsequent upgrades and migrations, otherwise the encrypted data will not be decrypted.
+# BOOTSTRAP_TOKEN is the key used for component authentication, only used when the component is registered. The components refer to koko, lion, magnus, kael, chen ...
 ```
 ```sh
 docker compose -f docker-compose-network.yml -f docker-compose-init-db.yml up
@@ -100,15 +99,15 @@ docker compose -f docker-compose-network.yml -f docker-compose.yml up -d
 docker rm jms_init_db
 ```
 
-## 集群部署
+## Cluster Deployment
 
-- Docker Swarm 集群环境
-- 自行创建 MySQL 和 Redis, 参考上面环境要求说明
-- 自行创建持久化共享存储目录 ( 例如 NFS, GlusterFS, Ceph 等 )
+- Docker Swarm cluster environment
+- Create MySQL and Redis yourself, refer to the above environment requirements
+- Create a persistent shared storage directory yourself (such as NFS, GlusterFS, Ceph, etc.)
 
 ```sh
-# 在所有 Docker Swarm Worker 节点挂载 NFS 或者其他共享存储, 例如 /data/jumpserver
-# 注意: 需要手动创建所有需要挂载的持久化目录, Docker Swarm 模式不会自动创建所需的目录
+# Mount NFS or other shared storage on all Docker Swarm Worker nodes, such as /data/jumpserver
+# Note: You need to manually create all the persistent directories that need to be mounted, Docker Swarm mode will not automatically create the required directories
 mkdir -p /data/jumpserver/core/data
 mkdir -p /data/jumpserver/chen/data
 mkdir -p /data/jumpserver/lion/data
@@ -124,23 +123,23 @@ cp config_example.conf .env
 vi .env
 ```
 ```vim
-# 版本号可以自己根据项目的版本修改
-VERSION=v4.2.0
+# The version number can be modified according to the version of the project
+VERSION=v4.1.0
 
-# 构建参数, 支持 amd64, arm64, ppc64le, s390x
+# Build parameters, support amd64, arm64, ppc64le, s390x
 TARGETARCH=amd64
 
-# Compose, Swarm 模式下修改 NETWORK_DRIVER=overlay
+# For Compose, Swarm mode, modify NETWORK_DRIVER=overlay
 COMPOSE_PROJECT_NAME=jms
 # COMPOSE_HTTP_TIMEOUT=3600
 # DOCKER_CLIENT_TIMEOUT=3600
 DOCKER_SUBNET=192.168.250.0/24
 NETWORK_DRIVER=overlay
 
-# 持久化存储
+# Persistent storage
 VOLUME_DIR=/data/jumpserver
 
-# 时区
+# Time zone
 TZ=Asia/Shanghai
 
 # PostgreSQL
@@ -162,7 +161,6 @@ BOOTSTRAP_TOKEN=7Q11Vz6R2J6BLAdO
 LOG_LEVEL=ERROR
 DOMAINS=
 
-# 组件通信
 CORE_HOST=http://core:8080
 
 # Lion
@@ -175,35 +173,35 @@ HTTP_PORT=80
 SSH_PORT=2222
 
 ##
-# SECRET_KEY 保护签名数据的密匙, 首次安装请一定要修改并牢记, 后续升级和迁移不可更改, 否则将导致加密的数据不可解密。
-# BOOTSTRAP_TOKEN 为组件认证使用的密钥, 仅组件注册时使用。组件指 koko, lion, magnus, kael, chen ...
+# SECRET_KEY is the key to protect signed data. Please be sure to modify and remember it for the first installation. It cannot be changed during subsequent upgrades and migrations, otherwise the encrypted data will not be decrypted.
+# BOOTSTRAP_TOKEN is the key used for component authentication, only used when the component is registered. The components refer to koko, lion, magnus, kael, chen ...
 ```
 ```sh
-# 生成 docker stack 部署所需文件
+# Generate files required for docker stack deployment
 docker compose -f docker-compose-network.yml -f docker-compose-init-db.yml config | sed '/published:/ s/"//g' | sed "/name:/d" > docker-stack-init-db.yml
 docker compose -f docker-compose-network.yml -f docker-compose.yml config | sed '/published:/ s/"//g' | sed "/name:/d" > docker-stack.yml
 ```
 ```sh
-# 初始化数据库
+# Initialize the database
 docker stack deploy -c docker-stack-init-db.yml jumpserver
 docker service ls
 docker service ps jumpserver_init_db
 
-# 根据查到的 Worker 节点, 到对应节点查看初始化日志
+# According to the found Worker node, check the initialization log on the corresponding node
 ```
 ```sh
-# 启动 JumpServer 应用
+# Start JumpServer application
 docker stack deploy -c docker-stack.yml jumpserver
 docker service ls
 ```
 ```sh
-# 扩容缩容
-docker service update --replicas=2 jumpserver_koko  # 扩容 koko 到 2 个副本
-docker service update --replicas=4 jumpserver_lion  # 扩容 lion 到 2 个副本
+# Scale up and down
+docker service update --replicas=2 jumpserver_koko  # Scale up koko to 2 replicas
+docker service update --replicas=4 jumpserver_lion  # Scale up lion to 2 replicas
 # ...
 ```
 
-## 初始账号
+## Initial Account
 
-- 账号: `admin`
-- 密码: `ChangeMe`
+- username: `admin`
+- password: `ChangeMe`

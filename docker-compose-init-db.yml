@@ -1,0 +1,18 @@
+services:
+  init_db:
+    image: ghcr.io/jumpserver-dev/core:${VERSION}
+    container_name: jms_init_db
+    command: upgrade_db
+    deploy:
+      mode: replicated-job
+      replicas: 1
+      restart_policy:
+        condition: none
+      placement:
+        constraints:
+          - "node.role==worker"
+    env_file: .env
+    volumes:
+      - ${VOLUME_DIR}/core/data:/opt/jumpserver/data
+    networks:
+      - net

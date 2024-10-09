@@ -31,7 +31,7 @@ RUN set -e \
     && chmod 755 /usr/local/bin/wisp \
     && rm -f /opt/*.tar.gz
 
-ARG VERSION=v4.2.0
+ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/lion \
@@ -64,7 +64,7 @@ COPY --from=stage-1 /opt/lion /opt/lion
 
 WORKDIR /opt/lion
 
-ARG VERSION=v4.2.0
+ARG VERSION
 ENV VERSION=${VERSION}
 
 VOLUME /opt/lion/data
