@@ -29,7 +29,7 @@ ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/jumpserver \
-    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/core-${VERSION}.tar.gz \
+    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/core-${VERSION}.tar.gz \
     && tar -xf /opt/core-${VERSION}.tar.gz -C /opt/jumpserver --strip-components=1 \
     && chown -R root:root /opt/jumpserver \
     && rm -f /opt/*.tar.gz

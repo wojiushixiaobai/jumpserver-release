@@ -35,7 +35,7 @@ ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/lion \
-    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/lion-${VERSION}-linux-${TARGETARCH}.tar.gz \
+    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/lion-${VERSION}-linux-${TARGETARCH}.tar.gz \
     && tar -xf /opt/lion-${VERSION}-linux-${TARGETARCH}.tar.gz -C /opt/lion --strip-components=1 \
     && chown -R root:root /opt/lion \
     && rm -f /opt/*.tar.gz

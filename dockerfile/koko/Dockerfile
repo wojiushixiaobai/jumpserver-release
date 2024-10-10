@@ -86,7 +86,7 @@ ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/koko \
-    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/koko-${VERSION}-linux-${TARGETARCH}.tar.gz \
+    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/koko-${VERSION}-linux-${TARGETARCH}.tar.gz \
     && tar -xf /opt/koko-${VERSION}-linux-${TARGETARCH}.tar.gz -C /opt/koko --strip-components=1 \
     && chown -R root:root /opt/koko \
     && mv /opt/koko/kubectl /usr/local/bin/ \
