@@ -111,6 +111,7 @@ jobs:
           repository: jumpserver/jumpserver
           ref: ${{ env.version }}
           path: ${{ matrix.component }}
+          lfs: true
 
       - name: Checkout Code for Custom
         if: contains(fromJson('["koko", "lion", "chen", "lina", "luna"]'), matrix.component)

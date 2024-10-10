@@ -35,7 +35,7 @@ ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/chen \
-    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/chen-${VERSION}.tar.gz \
+    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/chen-${VERSION}.tar.gz \
     && tar -xf /opt/chen-${VERSION}.tar.gz -C /opt/chen --strip-components=1 \
     && chown -R root:root /opt/chen \
     && rm -f /opt/*.tar.gz

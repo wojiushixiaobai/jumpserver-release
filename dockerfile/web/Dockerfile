@@ -28,9 +28,9 @@ ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/lina /opt/luna /opt/download \
-    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/lina-${VERSION}.tar.gz \
-    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/luna-${VERSION}.tar.gz \
-    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/web-${VERSION}.tar.gz \
+    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/lina-${VERSION}.tar.gz \
+    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/luna-${VERSION}.tar.gz \
+    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/web-${VERSION}.tar.gz \
     && tar -xf lina-${VERSION}.tar.gz -C /opt/lina --strip-components=1 \
     && tar -xf luna-${VERSION}.tar.gz -C /opt/luna --strip-components=1 \
     && tar -xf web-${VERSION}.tar.gz -C /opt/download --strip-components=1 \

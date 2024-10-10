@@ -1,6 +1,6 @@
 services:
   init_db:
-    image: ghcr.io/jumpserver-dev/core:${VERSION}
+    image: ghcr.io/wojiushixiaobai/core:${VERSION}
     container_name: jms_init_db
     command: upgrade_db
     deploy:

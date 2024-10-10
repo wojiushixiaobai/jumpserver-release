@@ -1,6 +1,6 @@
 services:
   core:
-    image: ghcr.io/jumpserver-dev/core:${VERSION}
+    image: ghcr.io/wojiushixiaobai/core:${VERSION}
     container_name: jms_core
     command: start web
     deploy:
@@ -28,7 +28,7 @@ services:
       - net
 
   celery:
-    image: ghcr.io/jumpserver-dev/core:${VERSION}
+    image: ghcr.io/wojiushixiaobai/core:${VERSION}
     container_name: jms_celery
     command: start task
     deploy:
@@ -56,7 +56,7 @@ services:
       - net
 
   koko:
-    image: ghcr.io/jumpserver-dev/koko:${VERSION}
+    image: ghcr.io/wojiushixiaobai/koko:${VERSION}
     container_name: jms_koko
     privileged: true
     deploy:
@@ -108,7 +108,7 @@ services:
       - net
 
   lion:
-    image: ghcr.io/jumpserver-dev/lion:${VERSION}
+    image: ghcr.io/wojiushixiaobai/lion:${VERSION}
     container_name: jms_lion
     deploy:
       mode: replicated
@@ -135,7 +135,7 @@ services:
       - net
 
   chen:
-    image: ghcr.io/jumpserver-dev/chen:${VERSION}
+    image: ghcr.io/wojiushixiaobai/chen:${VERSION}
     container_name: jms_chen
     deploy:
       mode: replicated
@@ -162,7 +162,7 @@ services:
       - net
 
   web:
-    image: ghcr.io/jumpserver-dev/web:${VERSION}
+    image: ghcr.io/wojiushixiaobai/web:${VERSION}
     container_name: jms_web
     deploy:
       mode: replicated

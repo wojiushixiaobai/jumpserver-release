@@ -29,9 +29,10 @@ ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/jumpserver \
-    && wget --quiet https://github.com/jumpserver-dev/jumpserver-release/releases/download/${VERSION}/core-${VERSION}.tar.gz \
+    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/core-${VERSION}.tar.gz \
     && tar -xf /opt/core-${VERSION}.tar.gz -C /opt/jumpserver --strip-components=1 \
     && chown -R root:root /opt/jumpserver \
+    && echo > /opt/jumpserver/config.yml \
     && rm -f /opt/*.tar.gz
 
 COPY dockerfile/core/entrypoint.sh /opt/jumpserver/entrypoint.sh
@@ -101,6 +102,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile /dev/null\n\tCiphers +aes128-cbc\n\tKexAlgorithms +diffie-hellman-group1-sha1\n\tHostKeyAlgorithms +ssh-rsa" > /root/.ssh/config
 
 COPY --from=stage-1 /usr/local/bin /usr/local/bin
+COPY --from=stage-1 /opt/jumpserver /opt/jumpserver
 COPY --from=stage-1 /opt/jumpserver/apps/libs/ansible/ansible.cfg /etc/ansible/
 COPY --from=stage-2 /opt/py3 /opt/py3
 
