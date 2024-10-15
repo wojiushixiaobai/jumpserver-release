@@ -39,9 +39,9 @@ jobs:
       - name: Create Tag
         if: env.create_tag == '1'
         run: |
-          sed -i 's@VERSION=.*@VERSION="${{ env.version }}"@g' config_example.conf
-          sed -i 's@VERSION=.*@VERSION="${{ env.version }}"@g' README.md
-          sed -i 's@VERSION=.*@VERSION="${{ env.version }}"@g' README_EN.md
+          sed -i 's@VERSION=.*@VERSION=${{ env.version }}@g' config_example.conf
+          sed -i 's@VERSION=.*@VERSION=${{ env.version }}@g' README.md
+          sed -i 's@VERSION=.*@VERSION=${{ env.version }}@g' README_EN.md
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
