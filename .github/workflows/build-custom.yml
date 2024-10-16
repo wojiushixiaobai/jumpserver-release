@@ -8,7 +8,7 @@ on:
         required: true
         default: 'dev'
       version:
-        description: 'Image Tag'
+        description: 'Release Version'
         required: true
         default: 'dev'
 
@@ -19,7 +19,7 @@ jobs:
       - name: Get Version
         id: get_version
         run: |
-          version=${{ github.event.inputs.tag }}
+          version=${{ github.event.inputs.version }}
           echo "Current Version: ${version}"
           echo "version=${version}" >> $GITHUB_ENV
           echo "version=${version}" >> $GITHUB_OUTPUT
@@ -66,7 +66,8 @@ jobs:
 
       - name: Get Version
         run: |
-          version=${{ github.event.inputs.tag }}
+          version=${{ github.event.inputs.version }}
+          echo "tag=${tag}" >> $GITHUB_ENV
           echo "version=${version}" >> $GITHUB_ENV
 
       - uses: actions/setup-go@v5
@@ -105,7 +106,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: jumpserver/jumpserver
-          ref: ${{ env.version }}
+          ref: ${{ github.event.inputs.tag }}
           path: ${{ matrix.component }}
           lfs: true
 
@@ -114,7 +115,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: jumpserver/${{ matrix.component }}
-          ref: ${{ env.version }}
+          ref: ${{ github.event.inputs.tag }}
           path: ${{ matrix.component }}
 
       - name: Checkout Code for Web
@@ -220,7 +221,7 @@ jobs:
 
       - name: Get Version
         run: |
-          version=${{ github.event.inputs.tag }}
+          version=${{ github.event.inputs.version }}
           echo "version=${version}" >> $GITHUB_ENV
 
       - name: Login to GitHub Container Registry

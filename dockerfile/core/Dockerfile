@@ -52,14 +52,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get update \
     && apt-get -y install --no-install-recommends ${DEPENDENCIES}
 
-COPY --from=stage-1 /opt/jumpserver/poetry.lock /opt/jumpserver/pyproject.toml /opt/jumpserver/
-
 WORKDIR /opt/jumpserver
 
-RUN --mount=type=cache,target=/root/.cache,sharing=locked \
+RUN --mount=type=cache,target=/root/.cache \
+    --mount=type=bind,from=stage-1,source=/opt/jumpserver/poetry.lock,target=poetry.lock \
+    --mount=type=bind,from=stage-1,source=/opt/jumpserver/pyproject.toml,target=pyproject.toml \
     set -e \
     && pip install poetry \
-    && poetry config virtualenvs.create false \
     && python3 -m venv /opt/py3 \
     && . /opt/py3/bin/activate \
     && poetry install --only=main
