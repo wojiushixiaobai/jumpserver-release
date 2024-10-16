@@ -133,8 +133,7 @@ jobs:
         if: matrix.component == 'core'
         run: |
           poetry config virtualenvs.create false
-          poetry source remove aliyun
-          poetry source add --priority=primary PyPI
+          cp -f ../dockerfile/core/pyproject.toml .
           poetry lock --no-update
           poetry install --only main
           sed -i "s@VERSION = .*@VERSION = '${version}'@g" apps/jumpserver/const.py
