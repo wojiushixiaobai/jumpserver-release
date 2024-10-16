@@ -40,18 +40,9 @@ COPY dockerfile/core/entrypoint.sh /opt/jumpserver/entrypoint.sh
 FROM python:3.11-slim-bookworm AS stage-2
 ARG TARGETARCH
 
-ARG BUILD_DEPENDENCIES="              \
-        g++                           \
-        make                          \
-        pkg-config"
-
 ARG DEPENDENCIES="                    \
-        default-libmysqlclient-dev    \
-        freetds-dev                   \
-        gettext                       \
-        libkrb5-dev                   \
-        libldap2-dev                  \
-        libsasl2-dev"
+        ca-certificates               \
+        gettext"
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -59,7 +50,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && rm -f /etc/apt/apt.conf.d/docker-clean \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
     && apt-get update \
-    && apt-get -y install --no-install-recommends ${BUILD_DEPENDENCIES} \
     && apt-get -y install --no-install-recommends ${DEPENDENCIES}
 
 COPY --from=stage-1 /opt/jumpserver/poetry.lock /opt/jumpserver/pyproject.toml /opt/jumpserver/
@@ -79,13 +69,11 @@ ENV LANG=en_US.UTF-8 \
     PATH=/opt/py3/bin:$PATH
 
 ARG DEPENDENCIES="                    \
-        libldap2-dev                  \
         libx11-dev"
 
 ARG TOOLS="                           \
         bubblewrap                    \
         ca-certificates               \
-        default-libmysqlclient-dev    \
         openssh-client                \
         sshpass"
 

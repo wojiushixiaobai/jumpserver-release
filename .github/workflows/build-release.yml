@@ -111,12 +111,8 @@ jobs:
         if: matrix.component == 'core'
         run: |
           sudo apt-get update
-          sudo apt-get -y install --no-install-recommends g++ make pkg-config
-          sudo apt-get -y install --no-install-recommends default-libmysqlclient-dev freetds-dev gettext libkrb5-dev libldap2-dev libsasl2-dev
-          sudo apt-get autoclean
+          sudo apt-get -y install --no-install-recommends gettext
           pip install poetry
-          SECRET_KEY=$(head -c100 < /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 48)
-          echo "SECRET_KEY=${SECRET_KEY}" >> $GITHUB_ENV
 
       - name: Install Dependencies for Golang
         if: contains(fromJson('["koko", "lion"]'), matrix.component)
@@ -158,13 +154,12 @@ jobs:
         if: matrix.component == 'core'
         run: |
           poetry config virtualenvs.create false
-          poetry source remove aliyun
-          poetry source add --priority=primary PyPI
+          cp -f ../dockerfile/core/pyproject.toml .
           poetry lock --no-update
           poetry install --only main
-          sed -i "s@VERSION = .*@VERSION = '${version}'@g" apps/jumpserver/const.py
+          sed -i "s@VERSION = .*@VERSION = '${{ env.version }}'@g" apps/jumpserver/const.py
           echo > config.yml
-          export SECRET_KEY=${{ env.SECRET_KEY }}
+          export SECRET_KEY=$(head -c100 < /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 48)
           python apps/manage.py compilemessages
           rm -f config.yml
           cd ..
@@ -178,31 +173,29 @@ jobs:
           case ${{ matrix.component }} in
             koko|lion)
               cd ui
+              yarn install
               ;;
             chen)
               cd frontend
               rm -f package-lock.json yarn.lock
               yarn config set ignore-engines true
+              yarn install
+              yarn build
               ;;
             lina)
-              sed -i "s@version-dev@${version}@g" src/layout/components/NavHeader/About.vue
+              sed -i "s@version-dev@${{ env.version }}@g" src/layout/components/NavHeader/About.vue
+              yarn install
+              yarn build
+              mv lina lina-${{ env.version }}
+              tar -zcvf ../dist/lina-${{ env.version }}.tar.gz lina-${{ env.version }}
               ;;
             luna)
-              sed -i "s@version =.*;@version = '${version}';@g" src/environments/environment.prod.ts
-              ;;
-          esac
-          yarn cache dir
-          yarn install
-          yarn build
-          case ${{ matrix.component }} in
-            luna)
+              sed -i "s@version =.*;@version = '${{ env.version }}';@g" src/environments/environment.prod.ts
+              yarn install
+              yarn build
               cp -R src/assets/i18n luna/
-              ;;
-          esac
-          case ${{ matrix.component }} in
-            lina|luna)
-              mv ${{ matrix.component }} ${{ matrix.component }}-${{ env.version }}
-              tar -zcvf ../dist/${{ matrix.component }}-${{ env.version }}.tar.gz ${{ matrix.component }}-${{ env.version }}
+              mv luna luna-${{ env.version }}
+              tar -zcvf ../dist/luna-${{ env.version }}.tar.gz luna-${{ env.version }}
               ;;
           esac
         working-directory: ./${{ matrix.component }}
