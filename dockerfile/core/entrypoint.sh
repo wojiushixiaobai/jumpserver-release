@@ -9,15 +9,19 @@ function cleanup() {
     fi
 }
 
-until check tcp://${DB_HOST}:${DB_PORT}; do
-    echo "wait for jms_mysql ${DB_HOST} ready"
-    sleep 2s
-done
+if [ -n "${DB_HOST}" ] && [ -n "${DB_PORT}" ]; then
+    until check tcp://${DB_HOST}:${DB_PORT}; do
+        echo "wait for jms_mysql ${DB_HOST} ready"
+        sleep 2s
+    done
+fi
 
-until check tcp://${REDIS_HOST}:${REDIS_PORT}; do
-    echo "wait for jms_redis ${REDIS_HOST} ready"
-    sleep 2s
-done
+if [ -n "${REDIS_HOST}" ] && [ -n "${REDIS_PORT}" ]; then
+    until check tcp://${REDIS_HOST}:${REDIS_PORT}; do
+        echo "wait for jms_redis ${REDIS_HOST} ready"
+        sleep 2s
+    done
+fi
 
 trap cleanup EXIT
 rm -f /opt/jumpserver/tmp/*.pid
