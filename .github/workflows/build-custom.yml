@@ -11,6 +11,11 @@ on:
         description: 'Release Version'
         required: true
         default: 'dev'
+      latest:
+        description: 'Latest Release'
+        type: boolean
+        required: true
+        default: false
 
 jobs:
   check:
@@ -38,7 +43,11 @@ jobs:
 
       - name: Check Release
         run: |
-          gh release create ${{ env.version }} -t ${{ env.version }} -n "Release ${{ env.version }}" -R ${{ github.repository }} --latest=false || echo "Release already exists"
+          if [ "${{ github.event.inputs.latest }}" == "true" ]; then
+            gh release create ${{ env.version }} -t ${{ env.version }} -n "Release ${{ env.version }}" -R ${{ github.repository }} || echo "Release already exists"
+          else
+            gh release create ${{ env.version }} -t ${{ env.version }} -n "Release ${{ env.version }}" -R ${{ github.repository }} --latest=false || echo "Release already exists"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
