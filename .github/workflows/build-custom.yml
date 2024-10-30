@@ -147,6 +147,7 @@ jobs:
           export SECRET_KEY=$(head -c100 < /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 48)
           python apps/manage.py compilemessages
           rm -f config.yml
+          rm -rf .git .github
           cd ..
           cp -R core core-${{ env.version }}
           tar -zcvf dist/core-${{ env.version }}.tar.gz core-${{ env.version }}

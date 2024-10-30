@@ -58,7 +58,6 @@ services:
   koko:
     image: ghcr.io/wojiushixiaobai/koko:${VERSION}
     container_name: jms_koko
-    privileged: true
     deploy:
       mode: replicated
       replicas: 1
