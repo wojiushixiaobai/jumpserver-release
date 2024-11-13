@@ -1,4 +1,4 @@
-name: Build Custom
+name: Build Release
 
 on:
   workflow_dispatch:
@@ -6,11 +6,16 @@ on:
       tag:
         description: 'Build Tag'
         required: true
-        default: 'dev'
+        default: ''
       version:
         description: 'Release Version'
         required: true
-        default: 'dev'
+        default: ''
+      latest:
+        description: 'Latest Release'
+        type: boolean
+        required: true
+        default: false
 
 jobs:
   check:
@@ -26,8 +31,6 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: dev
 
       - name: Create Tag
         run: |
@@ -40,7 +43,11 @@ jobs:
 
       - name: Check Release
         run: |
-          gh release create ${{ env.version }} -t ${{ env.version }} -n "Release ${{ env.version }}" -R ${{ github.repository }} --latest=false || echo "Release already exists"
+          if [ "${{ github.event.inputs.latest }}" == "true" ]; then
+            gh release create ${{ env.version }} -t ${{ env.version }} -n "Release ${{ env.version }}" -R ${{ github.repository }} || echo "Release already exists"
+          else
+            gh release create ${{ env.version }} -t ${{ env.version }} -n "Release ${{ env.version }}" -R ${{ github.repository }} --latest=false || echo "Release already exists"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
