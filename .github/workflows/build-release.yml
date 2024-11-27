@@ -150,7 +150,7 @@ jobs:
           rm -rf .git .github
           cd ..
           cp -R core core-${{ env.version }}
-          tar -zcvf dist/core-${{ env.version }}.tar.gz core-${{ env.version }}
+          tar -zcf dist/core-${{ env.version }}.tar.gz core-${{ env.version }}
         working-directory: ./${{ matrix.component }}
 
       - name: Build Web
