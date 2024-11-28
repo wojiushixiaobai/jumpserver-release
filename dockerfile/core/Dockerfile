@@ -3,8 +3,6 @@ ARG TARGETARCH
 
 ARG DEPENDENCIES="                    \
         ca-certificates               \
-        git                           \
-        git-lfs                       \
         wget"
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \

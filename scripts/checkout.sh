@@ -32,18 +32,18 @@ for REPO in $REPOS; do
     pushd "$SRC"
     GHSHA=$(git rev-parse HEAD)
     echo "$GHSHA" > GHSHA
-    rm -rf .git
+    rm -rf .git .github
     case "$REPO" in
         "jumpserver/jumpserver")
             sed -i "s@VERSION = .*@VERSION = '${VERSION}'@g" apps/jumpserver/const.py
             ;;
         "jumpserver/koko")
-            sed -i "s@VERSION ?=.*@VERSION=${VERSION}@g" Makefile
-            sed -i "s@COMMIT:=.*@COMMIT:=${GHSHA}@g" Makefile
+            sed -i "s@VERSION ?=.*@VERSION := ${VERSION}@g" Makefile
+            sed -i "s@COMMIT := .*@COMMIT := ${GHSHA}@g" Makefile
             ;;
         "jumpserver/lion")
-            sed -i "s@VERSION ?=.*@VERSION=${VERSION}@g" Makefile
-            sed -i "s@COMMIT:=.*@COMMIT:=${GHSHA}@g" Makefile
+            sed -i "s@VERSION ?=.*@VERSION := ${VERSION}@g" Makefile
+            sed -i "s@COMMIT := .*@COMMIT := ${GHSHA}@g" Makefile
             ;;
         "jumpserver/lina")
             sed -i "s@version-dev@${VERSION}@g" src/layout/components/NavHeader/About.vue
