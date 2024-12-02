@@ -59,7 +59,7 @@ RUN --mount=type=cache,target=/root/.cache \
     && pip install poetry \
     && python3 -m venv /opt/py3 \
     && . /opt/py3/bin/activate \
-    && poetry install --only=main
+    && poetry install --with binarys
 
 FROM python:3.11-slim-bookworm
 ENV LANG=en_US.UTF-8 \

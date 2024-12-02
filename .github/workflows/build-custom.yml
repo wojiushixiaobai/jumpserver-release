@@ -145,7 +145,7 @@ jobs:
           poetry config virtualenvs.create false
           cp -f ../dockerfile/core/pyproject.toml .
           poetry lock --no-update
-          poetry install --only main
+          poetry install --with binarys
           sed -i "s@VERSION = .*@VERSION = '${{ env.version }}'@g" apps/jumpserver/const.py
           echo > config.yml
           export SECRET_KEY=$(head -c100 < /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 48)
