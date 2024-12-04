@@ -139,10 +139,10 @@ jobs:
               cd ${{ matrix.component }}
               sed -i "s@VERSION ?=.*@VERSION := ${{ env.version }}@g" Makefile
               sed -i "s@COMMIT := .*@COMMIT := ${GHSHA}@g" Makefile
+              sed -i 's/@cd $(UIDIR)/# @cd $(UIDIR)/g' Makefile
               cd ..
               cp -R ${{ matrix.component }} ${{ matrix.component }}-${{ env.version }}
               rm -rf ${{ matrix.component }}-${{ env.version }}/.git ${{ matrix.component }}-${{ env.version }}/.github
-              tar -zcf dist/${{ matrix.component }}-${{ env.version }}.tar.gz ${{ matrix.component }}-${{ env.version }}
               ;;
             web)
               cp scripts/prepare.sh .
@@ -176,6 +176,10 @@ jobs:
             koko|lion)
               cd ui
               yarn install
+              yarn build
+              cp -R dist ../../${{ matrix.component }}-${{ env.version }}/ui
+              cd ../../
+              tar -zcvf dist/${{ matrix.component }}-${{ env.version }}.tar.gz ${{ matrix.component }}-${{ env.version }}
               ;;
             chen)
               cd frontend
