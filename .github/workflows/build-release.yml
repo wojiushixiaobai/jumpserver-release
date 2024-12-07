@@ -221,6 +221,7 @@ jobs:
           mkdir -p dist chen-${{ env.version }}
           rm -f config/application-dev.yml
           mv backend/web/target/web-*.jar chen-${{ env.version }}/chen.jar
+          mv entrypoint.sh chen-${{ env.version }}/entrypoint.sh
           mv drivers chen-${{ env.version }}/drivers
           mv config chen-${{ env.version }}/config
           tar -zcvf ../dist/chen-${{ env.version }}.tar.gz chen-${{ env.version }}

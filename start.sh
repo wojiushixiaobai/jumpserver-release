@@ -8,10 +8,10 @@ if [ ! -f .env ]; then
     REDIS_PASSWORD=$(openssl rand -hex 12)
     SECRET_KEY=$(openssl rand -hex 24)
     BOOTSTRAP_TOKEN=$(openssl rand -hex 24)
-    sed -i 's@DB_PASSWORD=.*@DB_PASSWORD=${DB_PASSWORD}@' .env
-    sed -i 's@REDIS_PASSWORD=.*@REDIS_PASSWORD=${REDIS_PASSWORD}@' .env
-    sed -i 's@SECRET_KEY=.*@SECRET_KEY=${SECRET_KEY}@' .env
-    sed -i 's@BOOTSTRAP_TOKEN=.*@BOOTSTRAP_TOKEN=${BOOTSTRAP_TOKEN}@' .env
+    sed -i "s@DB_PASSWORD=.*@DB_PASSWORD=${DB_PASSWORD}@" .env
+    sed -i "s@REDIS_PASSWORD=.*@REDIS_PASSWORD=${REDIS_PASSWORD}@" .env
+    sed -i "s@SECRET_KEY=.*@SECRET_KEY=${SECRET_KEY}@" .env
+    sed -i "s@BOOTSTRAP_TOKEN=.*@BOOTSTRAP_TOKEN=${BOOTSTRAP_TOKEN}@" .env
 fi
 
 # Check if docker compose exists, if it does use it
