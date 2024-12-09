@@ -83,7 +83,6 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     && cd /opt/koko \
     && make linux-${TARGETARCH} BUILDDIR=dist VERSION=${VERSION} \
     && mv dist/*.tar.gz /opt \
-    && mv entrypoint.sh /opt \
     && rm -rf /opt/koko
 
 WORKDIR /opt/koko
@@ -93,7 +92,6 @@ RUN set -e \
     && chown -R root:root /opt/koko \
     && mv /opt/koko/kubectl /usr/local/bin/ \
     && mv /opt/koko/helm /usr/local/bin/ \
-    && mv /opt/entrypoint.sh /opt/koko/ \
     && chmod 755 /usr/local/bin/helm /usr/local/bin/kubectl /opt/koko/*.sh \
     && chown -R root:root /opt/koko \
     && rm -f /opt/*.tar.gz

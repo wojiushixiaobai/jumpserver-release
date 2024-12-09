@@ -33,15 +33,12 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     && cd /opt/lion \
     && make linux-${TARGETARCH} BUILDDIR=dist VERSION=${VERSION} \
     && mv dist/*.tar.gz /opt \
-    && mv supervisord.conf /opt \
-    && mv entrypoint.sh /opt \
     && rm -rf /opt/lion
 
 WORKDIR /opt/lion
 
 RUN set -e \
     && tar -xf /opt/lion-${VERSION}-linux-${TARGETARCH}.tar.gz -C /opt/lion --strip-components=1 \
-    && mv /opt/entrypoint.sh /opt/lion/entrypoint.sh \
     && chmod 755 /opt/lion/*.sh \
     && chown -R root:root /opt/lion \
     && rm -f /opt/*.tar.gz
@@ -68,9 +65,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get install -y --no-install-recommends ${DEPENDENCIES} \
     && apt-get install -y --no-install-recommends $(cat "${PREFIX_DIR}"/DEPENDENCIES)
 
-COPY --from=stage-2 /opt/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY --from=stage-2 /usr/local/bin /usr/local/bin
 COPY --from=stage-2 /opt/lion /opt/lion
+COPY --from=stage-2 /opt/lion/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 WORKDIR /opt/lion
 
