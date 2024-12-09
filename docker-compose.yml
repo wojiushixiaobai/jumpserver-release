@@ -2,7 +2,7 @@ services:
   core:
     image: ghcr.io/wojiushixiaobai/core:${VERSION}
     container_name: jms_core
-    command: start web
+    command: start all
     deploy:
       mode: replicated
       replicas: 1
@@ -22,34 +22,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 90s
-    volumes:
-      - ${VOLUME_DIR}/core/data:/opt/jumpserver/data
-    networks:
-      - net
-
-  celery:
-    image: ghcr.io/wojiushixiaobai/core:${VERSION}
-    container_name: jms_celery
-    command: start task
-    deploy:
-      mode: replicated
-      replicas: 1
-      # resources:
-        # limits:
-          # cpus: "0.2"
-          # memory: 1024M
-      restart_policy:
-        condition: on-failure
-      placement:
-        constraints:
-          - "node.role==worker"
-    env_file: .env
-    healthcheck:
-      test: "bash /opt/jumpserver/utils/check_celery.sh"
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
     volumes:
       - ${VOLUME_DIR}/core/data:/opt/jumpserver/data
     networks:
